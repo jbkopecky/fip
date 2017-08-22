@@ -151,7 +151,7 @@ class FipDownloader(object):
 
     def current_song(self):
         now = datetime.datetime.now()
-        out = self.current_songs[-1]
+        out = self.current_songs[-2]
         for i,s in enumerate(self.current_songs):
             if s.start <= now < s.end:
                 out = s
