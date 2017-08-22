@@ -151,9 +151,11 @@ class FipDownloader(object):
 
     def current_song(self):
         now = datetime.datetime.now()
+        out = self.current_songs[-1]
         for i,s in enumerate(self.current_songs):
             if s.start <= now < s.end:
-                return s
+                out = s
+        return out
 
 
 if __name__ == "__main__":
@@ -161,6 +163,7 @@ if __name__ == "__main__":
     fipdl.get_songs()
     fipdl.print_current_songs()
     current_song = fipdl.current_song()
-    download = query_yes_no(" ** Do you want to download current song %s ?" % current_song.title)
+    where = "~/Music"
+    download = query_yes_no(" ** Do you want to download current song %s in %s ?" % (current_song.title, where))
     if download:
-        current_song.download()
+        current_song.download(path=where)
