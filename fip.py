@@ -4,6 +4,7 @@ import json
 import datetime
 import subprocess
 import sys
+from collections import defaultdict
 
 
 USER_AGENTS = [
@@ -64,11 +65,11 @@ def netcat(hostname, port, content):
 class Song(object):
     def __init__(self, data):
         self.title = data['title']
-        self.youtube_link = data['lienYoutube'] if 'lienYoutube' in data.keys() else None
+        self.youtube_link = data['lienYoutube']
         self.visual = data['visual']
         self.performers = data['performers']
         self.authors = data['authors']
-        self.label = data['label'] if 'label' in data.keys() else None
+        self.label = data['label']
         self.album_title = data['titreAlbum']
         self.year = data['anneeEditionMusique']
         self.start = datetime.datetime.fromtimestamp(data['start'])
@@ -129,7 +130,8 @@ class FipDownloader(object):
         content = self.build_content(url)
         response = netcat(self.host, self.port, content)
         data = response.split("\r\n")[-1]
-        return json.loads(data)
+        data = json.loads(data)
+        return data
 
     def get_songs(self):
         data = self.get_metadata()
@@ -137,7 +139,8 @@ class FipDownloader(object):
         ids = data['levels'][0]['items']
         cur_id = ids[data['levels'][0]['position']]
         for i in ids:
-            song = Song(data['steps'][i])
+            _data = defaultdict(lambda: None, data['steps'][i])
+            song = Song(_data)
             self.current_songs.append(song)
 
     def print_current_songs(self):
