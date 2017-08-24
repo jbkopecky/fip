@@ -95,12 +95,13 @@ class Song(object):
         name = "%s - %s" % (self.title, self.artist)
         return start +  " - " + end + " | " + name + youtube_link
 
-    def save(self, music_directory="~/Music"):
+    def save(self, music_directory):
         date_string = "%4i%02i%02i" % (self.start.year, self.start.month, self.start.day)
-        file_path = os.path.expanduser(music_directory)
-        file_path += "/" + date_string
-        file_path += "-" + self.artist.replace(" ","_")
-        file_path += "-" + self.title.replace(" ","_")
+        base = os.path.expanduser(music_directory)
+        file_name = date_string
+        file_name += "-" + self.artist.replace(" ","_")
+        file_name += "-" + self.title.replace(" ","_")
+        file_path = os.path.join(base,file_name)
 
         if self.youtube_link is None:
             print(" ** Sorry, no youtube link provided by FIP...")
@@ -121,10 +122,10 @@ class Song(object):
     def set_tags(self, file_path):
         print(" ** Setting tags...")
         command =  ["eyeD3"]
-        command += ["--artist", "\""+self.artist+"\""]
-        command += ["--album", "\""+self.album_title+"\""]
-        command += ["--title", "\""+self.title+"\""]
-        command += ["--album-artist", "\""+self.artist+"\""]
+        command += ["--artist", self.artist]
+        command += ["--album", self.album_title]
+        command += ["--title", self.title]
+        command += ["--album-artist", self.artist]
         command += ["--release-year", str(self.year)] if self.year is not None else []
         command += [file_path]
         run_command(command)
@@ -132,8 +133,9 @@ class Song(object):
 
     def set_image_tag(self, music_directory, file_path):
         print(" ** Setting album picture...")
-        file_name = self.visual.split("/")[-1]
-        file_name = os.path.expanduser(music_directory) + "/" + file_name
+        file_type = self.visual.split(".")[-1]
+        file_name = "_tmp_fip_album_picture." + file_type
+        file_name = os.path.join(os.path.expanduser(music_directory) + file_name)
         with urllib.request.urlopen(self.visual) as response, open(file_name, 'wb') as out_file:
             data = response.read() # a `bytes` object
             out_file.write(data)
@@ -206,7 +208,7 @@ if __name__ == "__main__":
     fipdl.get_songs()
     fipdl.print_current_songs()
     current_song = fipdl.current_song()
-    here = "~/Music/FIP"
+    here = os.path.join("~","Music","FIP")
     download = query_yes_no(" ** Do you want to download current song %s in %s ?" % (current_song.title, here))
     if download:
         current_song.save(music_directory=here)
