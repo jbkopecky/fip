@@ -96,7 +96,7 @@ class Song(object):
         return start +  " - " + end + " | " + name + youtube_link
 
     def save(self, music_directory):
-        date_string = "%4i%02i%02i" % (self.start.year, self.start.month, self.start.day)
+        date_string = "%4i%02i%02i%02i%02i" % (self.start.year, self.start.month, self.start.day, self.start.hour, self.start.minute)
         base = os.path.expanduser(music_directory)
         file_name = date_string
         file_name += "-" + self.artist.replace(" ","_")
