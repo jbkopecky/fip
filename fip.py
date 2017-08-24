@@ -99,9 +99,9 @@ class Song(object):
         date_string = "%4i%02i%02i%02i%02i" % (self.start.year, self.start.month, self.start.day, self.start.hour, self.start.minute)
         base = os.path.expanduser(music_directory)
         file_name = date_string
-        file_name += "-" + self.artist.replace(" ","_")
-        file_name += "-" + self.title.replace(" ","_")
-        file_path = os.path.join(base,file_name)
+        file_name += "-" + self.artist
+        file_name += "-" + self.title
+        file_path = os.path.join(base,file_name.replace(" ","_").replace(":",""))
 
         if self.youtube_link is None:
             print(" ** Sorry, no youtube link provided by FIP...")
