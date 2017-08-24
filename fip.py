@@ -9,8 +9,6 @@ import os
 
 from collections import defaultdict
 
-import eyed3
-
 
 USER_AGENTS = [
         "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36",
@@ -208,7 +206,7 @@ if __name__ == "__main__":
     fipdl.get_songs()
     fipdl.print_current_songs()
     current_song = fipdl.current_song()
-    here = "~/Music"
+    here = "~/Music/FIP"
     download = query_yes_no(" ** Do you want to download current song %s in %s ?" % (current_song.title, here))
     if download:
         current_song.save(music_directory=here)
