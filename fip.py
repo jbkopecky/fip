@@ -1,4 +1,3 @@
-import socket
 import random
 import json
 import datetime
@@ -8,13 +7,6 @@ import sys
 import os
 
 from collections import defaultdict
-
-
-USER_AGENTS = [
-        "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36",
-        "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)",
-        "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36",
-        ]
 
 
 def query_yes_no(question, default="yes"):
@@ -50,21 +42,6 @@ def query_yes_no(question, default="yes"):
                              "(or 'y' or 'n').\n")
 
 
-def netcat(hostname, port, content):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((hostname, port))
-    s.sendall(content.encode('utf-8'))
-    s.shutdown(socket.SHUT_WR)
-    out = []
-    while True:
-        data = s.recv(1024)
-        if len(data) == 0:
-            break
-        out.append(data.decode('utf-8'))
-    s.close()
-    return "".join(out)
-
-
 def run_command(command, verbose=True):
     try:
         proc = subprocess.call(command)
@@ -77,11 +54,11 @@ def run_command(command, verbose=True):
 
 class Song(object):
     def __init__(self, data):
-        self.title        = data['title'].strip(':,.').lower()
-        self.artist   = data['performers'].strip(':,.').lower()
-        self.authors      = data['authors'].strip(':,.').lower()
-        self.label        = data['label'].strip(':,.').lower()
-        self.album_title  = data['titreAlbum'].strip(':,.').lower()
+        self.title        = data['title']
+        self.artist   = data['performers']
+        self.authors      = data['authors']
+        self.label        = data['label']
+        self.album_title  = data['titreAlbum']
         self.youtube_link = data['lienYoutube']
         self.visual       = data['visual']
         self.year         = data['anneeEditionMusique']
@@ -93,14 +70,14 @@ class Song(object):
         start = "%02i:%02i" % (self.start.hour, self.start.minute)
         end = "%02i:%02i" % (self.end.hour, self.end.minute)
         name = "%s - %s" % (self.title, self.artist)
-        return start +  " - " + end + " | " + name + youtube_link
+        return start +  " - " + end + " | " + name.lower() + youtube_link
 
     def save(self, music_directory):
         date_string = "%4i%02i%02i%02i%02i" % (self.start.year, self.start.month, self.start.day, self.start.hour, self.start.minute)
         base = os.path.expanduser(music_directory)
         file_name = date_string
-        file_name += "-" + self.artist
-        file_name += "-" + self.title
+        file_name += "-" + self.artist.lower()
+        file_name += "-" + self.title.lower()
         file_path = os.path.join(base,file_name.replace(" ","_").replace(":",""))
 
         if self.youtube_link is None:
@@ -122,10 +99,10 @@ class Song(object):
     def set_tags(self, file_path):
         print(" ** Setting tags...")
         command =  ["eyeD3"]
-        command += ["--artist", self.artist]
-        command += ["--album", self.album_title]
-        command += ["--title", self.title]
-        command += ["--album-artist", self.artist]
+        command += ["--artist", self.artist.lower()]
+        command += ["--album", self.album_title.lower()]
+        command += ["--title", self.title.lower()]
+        command += ["--album-artist", self.artist.lower()]
         command += ["--release-year", str(self.year)] if self.year is not None else []
         command += [file_path]
         run_command(command)
@@ -147,31 +124,13 @@ class Song(object):
 
 class FipDownloader(object):
     def __init__(self):
-        self.host = "www.fipradio.fr"
-        self.base_url = "/livemeta"
-        self.port = 80
-        self.http_version = "1.1"
+        self.url = "http://www.fipradio.fr/livemeta/7"
         self.current_songs = []
         self.download_time = None
 
-    def build_content(self, url):
-        user_agent = random.choice(USER_AGENTS)
-        content =  "GET %s HTTP/%s\r\n" % (url, self.http_version)
-        content += "Host: %s\r\n" % self.host
-        content += "User-Agent: %s\r\n" % user_agent
-        content += "Accept: */*\r\n"
-        content += "Connection: close\r\n\r\n"
-        return content
-
-    def build_url(self):
-        url = self.base_url
-        return url
-
     def get_metadata(self):
-        url = self.build_url()
-        content = self.build_content(url)
-        response = netcat(self.host, self.port, content)
-        data = response.split("\r\n")[-1]
+        response = urllib.request.urlopen(self.url)
+        data = response.read().decode('utf-8')
         data = json.loads(data)
         return data
 
