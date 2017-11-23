@@ -73,6 +73,9 @@ class Song(object):
         return start +  " - " + end + " | " + name.lower() + youtube_link
 
     def save(self, music_directory):
+        if not self.youtube_link:
+            print(" ** Sorry, no Youtube URL for this song...")
+            return
         date_string = "%4i%02i%02i%02i%02i" % (self.start.year, self.start.month, self.start.day, self.start.hour, self.start.minute)
         base = os.path.expanduser(music_directory)
         file_name = date_string
